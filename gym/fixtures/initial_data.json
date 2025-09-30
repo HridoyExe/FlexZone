@@ -1,0 +1,73 @@
+[
+  {
+    "model": "gym.membership",
+    "pk": 1,
+    "fields": {
+      "name": "Weekly",
+      "price": "1000.00",
+      "duration_days": 7
+    }
+  },
+  {
+    "model": "gym.membership",
+    "pk": 2,
+    "fields": {
+      "name": "Monthly",
+      "price": "3500.00",
+      "duration_days": 30
+    }
+  },
+  {
+    "model": "gym.membership",
+    "pk": 3,
+    "fields": {
+      "name": "Yearly",
+      "price": "40000.00",
+      "duration_days": 365
+    }
+  },
+  {
+    "model": "gym.fitnessclass",
+    "pk": 1,
+    "fields": {
+      "name": "Yoga",
+      "description": "Relaxing yoga class",
+      "instructor": 1,
+      "schedule_time": "2025-10-01T10:00:00Z",
+      "capacity": 20
+    }
+  },
+  {
+    "model": "gym.fitnessclass",
+    "pk": 2,
+    "fields": {
+      "name": "Zumba",
+      "description": "High energy dance workout",
+      "instructor": 1,
+      "schedule_time": "2025-10-01T12:00:00Z",
+      "capacity": 25
+    }
+  },
+  {
+    "model": "gym.fitnessclass",
+    "pk": 3,
+    "fields": {
+      "name": "Cardio",
+      "description": "Intense cardio training",
+      "instructor": 1,
+      "schedule_time": "2025-10-01T14:00:00Z",
+      "capacity": 30
+    }
+  },
+  {
+    "model": "gym.subscription",
+    "pk": 1,
+    "fields": {
+      "user": 2,
+      "plan": 1,
+      "start_date": "2025-09-29",
+      "end_date": "2025-10-06",
+      "status": "active"
+    }
+  }
+]
