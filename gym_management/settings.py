@@ -22,7 +22,6 @@ AUTH_USER_MODEL = "users.User"
 
 # Application definition
 INSTALLED_APPS = [
-    "corsheaders",
     "whitenoise.runserver_nostatic",
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,7 +41,6 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
-     "corsheaders.middleware.CorsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -53,10 +51,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-CORS_ALLOWED_ORIGINS = [
+# CORS_ALLOWED_ORIGINS = [
     
-    "http://localhost:5173",           
-]
+#     "http://localhost:5173",           
+# ]
 
 ROOT_URLCONF = 'gym_management.urls'
 
