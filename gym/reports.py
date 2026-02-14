@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 from django.db.models import Count, Avg, Sum, Q
 from .models import Subscription, Attendance, Feedback
-
+  
 class MemberShipReport(APIView):
     permission_classes = [IsAdminUser]
 

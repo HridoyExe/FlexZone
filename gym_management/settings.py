@@ -101,9 +101,9 @@ DATABASES = {
 
 # Configuration For Cloudinary  
 cloudinary.config( 
-    cloud_name = config('cloud_name'), 
-    api_key = config('api_key'), 
-    api_secret = config('api_secret'), # Click 'View API Keys' above to copy your API secret
+    cloud_name = config('CLOUD_NAME'), 
+    api_key = config('API_KEY'), 
+    api_secret = config('API_SECRET'), # Click 'View API Keys' above to copy your API secret
     secure=True
 )
 
@@ -153,6 +153,9 @@ STATICFILES_STORAGE="whitenoise.storage.CompressedStaticFilesStorage"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = { 
+    
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5,
     'COERCE_DECIMAL_TO_STRING': False,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',

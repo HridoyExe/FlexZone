@@ -27,7 +27,7 @@ class Subscription(models.Model):
     status = models.CharField(
         max_length=20,
         choices=(('active','Active'), ('inactive','Inactive')),
-        default='active'
+        default='inactive'
     )
 
     def __str__(self):

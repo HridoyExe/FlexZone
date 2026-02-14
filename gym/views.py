@@ -11,11 +11,13 @@ from .serializers import (
 
 from gym.permission import IsOwnerOrAdmin, IsStaffOrAdmin, ReadOnlyOrAdmin 
 from users.permissions import IsAdmin, IsMember, IsStaff
+from .pagination import StandardResultsSetPagination
 
 # ----------------------- Membership -----------------------
 class MembershipViewSet(viewsets.ModelViewSet):
-    queryset = Membership.objects.all()
+    queryset = Membership.objects.all().order_by('id')
     serializer_class = MembershipSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -25,15 +27,16 @@ class MembershipViewSet(viewsets.ModelViewSet):
 # ----------------------- Subscription -----------------------
 class SubscriptionViewSet(viewsets.ModelViewSet):
     serializer_class = SubscriptionSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         user = self.request.user
         if not user.is_authenticated:
             return Subscription.objects.none()
         if user.role in ['ADMIN', 'STAFF']:
-            return Subscription.objects.all()
+            return Subscription.objects.all().order_by('id')
         if user.role == 'MEMBER':
-            return Subscription.objects.filter(user=user)
+            return Subscription.objects.filter(user=user).order_by('id')
         return Subscription.objects.none()
 
     def get_permissions(self):
@@ -49,12 +52,17 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         return [IsOwnerOrAdmin()]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        from datetime import timedelta, date
+        plan = serializer.validated_data['plan']
+       
+        calculated_end_date = date.today() + timedelta(days=plan.duration_days)
+        serializer.save(user=self.request.user, end_date=calculated_end_date, status='inactive')
 
 # ----------------------- FitnessClass -----------------------
 class FitnessClassViewSet(viewsets.ModelViewSet):
-    queryset = FitnessClass.objects.all()
+    queryset = FitnessClass.objects.all().order_by('id')
     serializer_class = FitnessClassSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -70,15 +78,16 @@ class FitnessClassViewSet(viewsets.ModelViewSet):
 # ----------------------- ClassBooking -----------------------
 class ClassBookingViewSet(viewsets.ModelViewSet):
     serializer_class = ClassBookingSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         user = self.request.user
         if not user.is_authenticated:
             return ClassBooking.objects.none()
         if user.role in ['ADMIN', 'STAFF']:
-            return ClassBooking.objects.all()
+            return ClassBooking.objects.all().order_by('id')
         if user.role == 'MEMBER':
-            return ClassBooking.objects.filter(member=user)
+            return ClassBooking.objects.filter(member=user).order_by('id')
         return ClassBooking.objects.none()
 
     def get_permissions(self):
@@ -99,26 +108,25 @@ class ClassBookingViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        fitness_class = serializer.validated_data['fitness_class']
-        if fitness_class.booked_members.count() >= fitness_class.capacity:
-            return Response({"error": "Class is full"}, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer.save(member=request.user)
+        self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        serializer.save(member=self.request.user)
 
 # ----------------------- Attendance -----------------------
 class AttendanceViewSet(viewsets.ModelViewSet):
     serializer_class = AttendanceSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         user = self.request.user
         if not user.is_authenticated:
             return Attendance.objects.none()
         if user.role in ['ADMIN', 'STAFF']:
-            return Attendance.objects.all()
+            return Attendance.objects.all().order_by('id')
         if user.role == 'MEMBER':
-            return Attendance.objects.filter(member=user)
+            return Attendance.objects.filter(member=user).order_by('id')
         return Attendance.objects.none()
 
     def get_permissions(self):
@@ -134,16 +142,17 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 # ----------------------- Payment -----------------------
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
-    queryset = Payment.objects.all()
+    queryset = Payment.objects.all().order_by('id')
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         user = self.request.user
         if not user.is_authenticated:
             return Payment.objects.none()
         if user.role in ['ADMIN', 'STAFF']:
-            return Payment.objects.all()
+            return Payment.objects.all().order_by('id')
         if user.role == 'MEMBER':
-            return Payment.objects.filter(user=user)
+            return Payment.objects.filter(user=user).order_by('id')
         return Payment.objects.none()
 
     def get_permissions(self):
@@ -157,23 +166,30 @@ class PaymentViewSet(viewsets.ModelViewSet):
         return [IsOwnerOrAdmin()]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user, status='pending', method='SSLCommerz')
+        payment = serializer.save(user=self.request.user, status='success', method='Online/Card')
+        
+       
+        if payment.subscription and payment.status == 'success':
+            sub = payment.subscription
+            sub.status = 'active'
+            sub.save()
 
 # ----------------------- Feedback -----------------------
 class FeedbackViewSet(viewsets.ModelViewSet):
     serializer_class = FeedbackSerializer
-    queryset = Feedback.objects.all()
+    queryset = Feedback.objects.all().order_by('id')
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         user = self.request.user
         if not user.is_authenticated:
             return Feedback.objects.none()
         if user.role == 'ADMIN':
-            return Feedback.objects.all()
+            return Feedback.objects.all().order_by('id')
         if user.role == 'STAFF':
-            return Feedback.objects.filter(fitness_class__instructor=user)
+            return Feedback.objects.filter(fitness_class__instructor=user).order_by('id')
         if user.role == 'MEMBER':
-            return Feedback.objects.filter(member=user)
+            return Feedback.objects.filter(member=user).order_by('id')
         return Feedback.objects.none()
 
     def get_permissions(self):

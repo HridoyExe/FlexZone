@@ -18,8 +18,8 @@ class MembershipSerializer(serializers.ModelSerializer):
 class SubscriptionSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     plan = serializers.PrimaryKeyRelatedField(queryset=Membership.objects.all())
-    start_date = serializers.DateField(format="%Y-%m-%d")
-    end_date = serializers.DateField(format="%Y-%m-%d")
+    start_date = serializers.DateField(format="%Y-%m-%d", read_only=True)
+    end_date = serializers.DateField(format="%Y-%m-%d", read_only=True)
 
     class Meta:
         model = Subscription
@@ -38,9 +38,14 @@ class FitnessClassSerializer(serializers.ModelSerializer):
     def get_booked_members_count(self, obj):
         return obj.booked_members.count()
 
+from .validators import validate_class_capacity
+
 class ClassBookingSerializer(serializers.ModelSerializer):
     member = UserSerializer(read_only=True)
-    fitness_class = serializers.PrimaryKeyRelatedField(queryset=FitnessClass.objects.all())
+    fitness_class = serializers.PrimaryKeyRelatedField(
+        queryset=FitnessClass.objects.all(),
+        validators=[validate_class_capacity]
+    )
     booking_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 
     class Meta:
