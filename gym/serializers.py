@@ -11,15 +11,16 @@ class UserSerializer(serializers.ModelSerializer):
         ref_name = "UserGymApp"
 
 class MembershipSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
     class Meta:
         model = Membership
         fields = '__all__'
 
-    def get_image(self, obj):
-        if obj.image:
-            return obj.image.url
-        return None
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.image:
+            # Ensure we return the full URL for Cloudinary images
+            representation['image'] = instance.image.url if hasattr(instance.image, 'url') else str(instance.image)
+        return representation
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -35,7 +36,7 @@ class FitnessClassSerializer(serializers.ModelSerializer):
     instructor = UserSerializer(read_only=True)
     booked_members_count = serializers.SerializerMethodField()
     schedule_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
-    image = serializers.SerializerMethodField()
+    
     class Meta:
         model = FitnessClass
         fields = '__all__'
@@ -45,10 +46,11 @@ class FitnessClassSerializer(serializers.ModelSerializer):
     def get_booked_members_count(self, obj):
         return obj.booked_members.count()
 
-    def get_image(self, obj):
-        if obj.image:
-            return obj.image.url
-        return None
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.image:
+            representation['image'] = instance.image.url if hasattr(instance.image, 'url') else str(instance.image)
+        return representation
 
 from .validators import validate_class_capacity
 
