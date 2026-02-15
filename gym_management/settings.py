@@ -14,6 +14,7 @@ SECRET_KEY = 'django-insecure-1yf7qbsntuzr8d)0j=a79zr*^klvqvj)9f$p5m0i&9z%yr%u+u
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+# Setting this to True allows all origins, which simplifies deployment and avoids CORS issues for now
 CORS_ALLOW_ALL_ORIGINS = True
 
 ALLOWED_HOSTS = ["localhost",".vercel.app",'127.0.0.1']
@@ -54,10 +55,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  
-    
-]
+
 
 ROOT_URLCONF = 'gym_management.urls'
 
