@@ -19,6 +19,6 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 class CustomUserSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email',  'role', 'is_verified')
+        fields = ('id', 'first_name', 'last_name', 'email',  'role', 'is_verified', 'is_staff', 'is_superuser')
         ref_name = "CustomUserSerializerGym"
-        read_only_fields = ('role', 'is_verified')
+        read_only_fields = ('role', 'is_verified', 'is_staff', 'is_superuser')
