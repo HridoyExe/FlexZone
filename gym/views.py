@@ -195,7 +195,6 @@ def initiate_payment(request):
     except Membership.DoesNotExist:
         return Response({"error": "Membership plan not found"}, status=404)
 
-    # Create an inactive subscription first
     end_date = date.today() + timedelta(days=plan.duration_days)
     subscription = Subscription.objects.create(
         user=user,
@@ -206,7 +205,6 @@ def initiate_payment(request):
 
     transaction_id = str(uuid.uuid4())[:18]
     
-    # Create a pending payment record
     payment = Payment.objects.create(
         user=user,
         subscription=subscription,
@@ -232,10 +230,10 @@ def initiate_payment(request):
     post_body['fail_url'] = f"{main_settings.BACKEND_URL}/api/payments/fail/"
     post_body['cancel_url'] = f"{main_settings.BACKEND_URL}/api/payments/cancel/"
     post_body['emi_option'] = 0
-    post_body['cus_name'] = f"{user.first_name} {user.last_name}" if user.first_name else user.username 
+    post_body['cus_name'] = request.data.get("cus_name", f"{user.first_name} {user.last_name}" if user.first_name else user.email)
     post_body['cus_email'] = user.email
-    post_body['cus_phone'] = getattr(user, 'phone_number', '01700000000') 
-    post_body['cus_add1'] = getattr(user, 'address', 'Dhaka') 
+    post_body['cus_phone'] = request.data.get("cus_phone", getattr(user, 'phone_number', '01700000000'))
+    post_body['cus_add1'] = request.data.get("cus_address", getattr(user, 'address', 'Dhaka'))
     post_body['cus_city'] = "Dhaka"
     post_body['cus_state'] = "Dhaka"
     post_body['cus_postcode'] = "1212"
@@ -257,7 +255,7 @@ def initiate_payment(request):
 @csrf_exempt
 @api_view(['POST'])
 def payment_success(request):
-    # SSLCommerz sends data as POST, we access it via request.data
+   
     transaction_id = request.data.get('tran_id')
     val_id = request.data.get('val_id')
     
