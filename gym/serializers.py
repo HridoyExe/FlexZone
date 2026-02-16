@@ -32,6 +32,14 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         model = Subscription
         fields = '__all__'
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Include full details of the plan
+        representation['plan'] = MembershipSerializer(instance.plan).data
+        # Include essential user info if needed
+        representation['plan_name'] = instance.plan.name
+        return representation
+
 class FitnessClassSerializer(serializers.ModelSerializer):
     instructor = UserSerializer(read_only=True)
     booked_members_count = serializers.SerializerMethodField()
@@ -66,6 +74,12 @@ class ClassBookingSerializer(serializers.ModelSerializer):
         model = ClassBooking
         fields = '__all__'
         read_only_fields = ['member', 'booking_date']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Include full details of the fitness class
+        representation['fitness_class'] = FitnessClassSerializer(instance.fitness_class).data
+        return representation
 
 class AttendanceSerializer(serializers.ModelSerializer):
     member = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
