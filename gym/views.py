@@ -237,6 +237,8 @@ def initiate_payment(request):
     post_body['cus_phone'] = getattr(user, 'phone_number', '01700000000') 
     post_body['cus_add1'] = getattr(user, 'address', 'Dhaka') 
     post_body['cus_city'] = "Dhaka"
+    post_body['cus_state'] = "Dhaka"
+    post_body['cus_postcode'] = "1212"
     post_body['cus_country'] = "Bangladesh"
     post_body['shipping_method'] = "NO"
     post_body['multi_card_name'] = ""
@@ -255,8 +257,9 @@ def initiate_payment(request):
 @csrf_exempt
 @api_view(['POST'])
 def payment_success(request):
-    data = request.data
-    transaction_id = data.get('tran_id')
+    # SSLCommerz sends data as POST, we access it via request.data
+    transaction_id = request.data.get('tran_id')
+    val_id = request.data.get('val_id')
     
     try:
         payment = Payment.objects.get(transaction_id=transaction_id)
