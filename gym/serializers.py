@@ -43,16 +43,29 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 class FitnessClassSerializer(serializers.ModelSerializer):
     instructor = UserSerializer(read_only=True)
     booked_members_count = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    total_reviews = serializers.SerializerMethodField()
     schedule_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
     
     class Meta:
         model = FitnessClass
-        fields = '__all__'
-    
+        fields = ('id', 'name', 'instructor', 'description', 'capacity', 'image', 'schedule_time', 'booked_members_count', 'average_rating', 'total_reviews')
         read_only_fields = ['booked_members'] 
 
     def get_booked_members_count(self, obj):
         return obj.booked_members.count()
+
+    def get_average_rating(self, obj):
+        from .models import Feedback
+        feedbacks = Feedback.objects.filter(fitness_class=obj)
+        if not feedbacks.exists():
+            return 0
+        avg = sum(f.rating for f in feedbacks) / feedbacks.count()
+        return round(avg, 1)
+
+    def get_total_reviews(self, obj):
+        from .models import Feedback
+        return Feedback.objects.filter(fitness_class=obj).count()
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
