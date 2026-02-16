@@ -5,7 +5,8 @@ from .reports import MemberShipReport, AttendanceReport, FeedbackReport,Subscrip
 
 from .views import (
     MembershipViewSet, SubscriptionViewSet, FitnessClassViewSet,
-    ClassBookingViewSet, AttendanceViewSet, PaymentViewSet, FeedbackViewSet
+    ClassBookingViewSet, AttendanceViewSet, PaymentViewSet, FeedbackViewSet,
+    initiate_payment, payment_success, payment_fail, payment_cancel
 )
 
 
@@ -26,6 +27,11 @@ fitness_router.register('feedbacks', FeedbackViewSet, basename='fitness-class-fe
 urlpatterns = [
     path('', include(router.urls)),
     path('', include(fitness_router.urls)),
+    # SSLCommerz Payment URLs
+    path('payments/initiate/', initiate_payment, name='initiate-payment'),
+    path('payments/success/', payment_success, name='payment-success'),
+    path('payments/fail/', payment_fail, name='payment-fail'),
+    path('payments/cancel/', payment_cancel, name='payment-cancel'),
     path('reports/membership/', MemberShipReport.as_view(), name='membership-report'),
     path('reports/attendance/', AttendanceReport.as_view(), name='attendance-report'),
     path('reports/subscriptions/',SubscriptionReport.as_view(),name='subscriptions-report'),

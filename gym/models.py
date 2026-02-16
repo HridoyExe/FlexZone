@@ -92,8 +92,9 @@ class Payment(models.Model):
     class_booking = models.ForeignKey(ClassBooking, on_delete=models.SET_NULL, null=True, blank=True)  
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=(('success','Success'), ('failed','Failed')), default='success')
+    status = models.CharField(max_length=20, choices=(('success','Success'), ('failed','Failed'), ('pending','Pending')), default='pending')
     method = models.CharField(max_length=50, default='Cash/Manual')
+    transaction_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
 
     def __str__(self):
         return f"{self.user} - {self.amount} ({self.status})"
