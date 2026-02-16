@@ -36,4 +36,4 @@ tzdata==2025.2
 uritemplate==4.2.0
 urllib3==2.5.0
 whitenoise==6.11.0
-sslcommerz-lib==0.1.7
+sslcommerz-lib==1.0.0
