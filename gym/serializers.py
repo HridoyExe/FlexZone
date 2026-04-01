@@ -7,7 +7,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'email', 'role')
+        fields = ('id', 'email', 'role', 'first_name', 'last_name')
         ref_name = "UserGymApp"
 
 class MembershipSerializer(serializers.ModelSerializer):

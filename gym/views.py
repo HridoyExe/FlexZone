@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.csrf import csrf_exempt
@@ -29,7 +29,7 @@ class MembershipViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
-            return [IsAuthenticated()]
+            return [AllowAny()]
         return [IsStaffOrAdmin()]
 
 # ----------------------- Subscription -----------------------
@@ -74,7 +74,7 @@ class FitnessClassViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
-            return [IsAuthenticated()]
+            return [AllowAny()]
         return [IsStaffOrAdmin()]
 
     def perform_create(self, serializer):
@@ -146,6 +146,24 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if user.role in ['STAFF', 'ADMIN']:
             return [IsStaffOrAdmin()]
         return [IsOwnerOrAdmin()]
+
+    def create(self, request, *args, **kwargs):
+        # Handle unique constraint: (fitness_class, member, date)
+        member_id = request.data.get('member')
+        class_id = request.data.get('fitness_class')
+        status_val = request.data.get('status', 'absent')
+        today = date.today()
+
+        # Try to find an existing record for today, and update it; otherwise create it.
+        attendance, created = Attendance.objects.update_or_create(
+            member_id=member_id,
+            fitness_class_id=class_id,
+            date=today,
+            defaults={'status': status_val}
+        )
+
+        serializer = self.get_serializer(attendance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
 # ----------------------- Payment -----------------------
 class PaymentViewSet(viewsets.ModelViewSet):
@@ -290,18 +308,24 @@ class FeedbackViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        user = self.request.user
-        if not user.is_authenticated:
-            return Feedback.objects.none()
-        if user.role == 'ADMIN':
-            return Feedback.objects.all().order_by('id')
-        if user.role == 'STAFF':
-            return Feedback.objects.filter(fitness_class__instructor=user).order_by('id')
-        if user.role == 'MEMBER':
-            return Feedback.objects.filter(member=user).order_by('id')
-        return Feedback.objects.none()
+        queryset = Feedback.objects.all().order_by('-id')
+        
+        # Support for nested router: /api/fitness-classes/{id}/feedbacks/
+        class_pk = self.kwargs.get('fitness_class_pk')
+        if class_pk:
+            queryset = queryset.filter(fitness_class_id=class_pk)
+        else:
+            # Support for query param: /api/feedbacks/?fitness_class={id}
+            class_id = self.request.query_params.get('fitness_class')
+            if class_id:
+                queryset = queryset.filter(fitness_class_id=class_id)
+        
+        return queryset
 
     def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        
         user = self.request.user
         if not user.is_authenticated:
             return [IsAuthenticated()]
